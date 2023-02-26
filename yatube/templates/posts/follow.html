@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load cache %}
+{% block  title %}
+  все посты ваших подписок
+{% endblock %}
+
+
+
+{% block content %}
+
+  <div class="container py-5">
+    <h1>Ваших подписки</h1>
+      {% include 'posts/includes/switcher.html' with follow=True  %}
+      {% cache 20 index_follow  %}
+      {% for post in page_obj %}
+      <article>
+        {% include "../includes/posts.html" %}   
+          {% if post.group %}   
+            <a href="{% url "posts:group_list" post.group.slug %}">
+              все записи группы</a>
+          {% endif %} 
+        {% if not forloop.last %}<hr>{% endif %}
+      </article>
+      {% endfor %}
+      {% endcache %} 
+    {% include "posts/includes/paginator.html" %} 
+  </div>
+
+{% endblock %} 
