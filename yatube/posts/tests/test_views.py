@@ -234,9 +234,9 @@ class FollowViewsTest(TestCase):
                 'posts:profile_follow',
                 args=(self.post_autor,)))
         follow = Follow.objects.all()
+        self.assertEqual(count_follow + 1, follow.count())
         self.assertTrue(Follow.objects.filter(user=self.post_follower,
                                               author=self.post_autor).exists())
-        self.assertEqual(count_follow + 1, follow.count())
 
     def test_unfollow_on_user(self):
         '''Проверка отписки от пользователя.'''
