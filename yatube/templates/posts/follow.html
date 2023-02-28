@@ -9,9 +9,8 @@
 {% block content %}
 
   <div class="container py-5">
-    <h1>Ваших подписки</h1>
+    <h1>Ваши подписки</h1>
       {% include 'posts/includes/switcher.html' with follow=True  %}
-      {% cache 20 index_follow  %}
       {% for post in page_obj %}
       <article>
         {% include "../includes/posts.html" %}   
@@ -22,7 +21,6 @@
         {% if not forloop.last %}<hr>{% endif %}
       </article>
       {% endfor %}
-      {% endcache %} 
     {% include "posts/includes/paginator.html" %} 
   </div>
 

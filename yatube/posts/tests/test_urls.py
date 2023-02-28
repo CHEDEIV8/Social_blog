@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase, Client
 from http import HTTPStatus
+from django.urls import reverse
 
 from ..models import Post, Group
 
@@ -22,10 +23,14 @@ class PostURLTests(TestCase):
             slug='test_group',
             description='Тестовое описание',
         )
-        cls.privat_url = {f'/posts/{cls.post.id}/edit/':
-                          f'/auth/login/?next=/posts/{cls.post.id}/edit/',
-                          '/create/': '/auth/login/?next=/create/',
-                          }
+        cls.privat_url = {
+            reverse('posts:post_edit', args=(cls.post.id,)):
+            f'/auth/login/?next=/posts/{cls.post.id}/edit/',
+            reverse('posts:post_create'):
+            '/auth/login/?next=/create/',
+            reverse('posts:add_comment', args=(cls.post.id,)):
+            f'/auth/login/?next=/posts/{cls.post.id}/comment/',
+        }
 
     def setUp(self):
         self.guest_client = Client()
@@ -47,8 +52,8 @@ class PostURLTests(TestCase):
                 response = self.guest_client.get(page)
                 self.assertEqual(response.status_code, HTTPStatus.OK)
 
-    def test_post_edit_post_create_url_to_authorized_guest_clien(self):
-        '''Страницы /posts/post_id/edit/ и /create/
+    def test_privat_urls_to_authorized_and_guest_clien(self):
+        '''Страницы /posts/post_id/edit/, /posts/post_id/comment/, /create/
         допускает зарегестрированных авторов постов и
         перенаправляет анонимных пользователей.
         '''
@@ -56,7 +61,12 @@ class PostURLTests(TestCase):
         for url, url_response in self.privat_url.items():
             with self.subTest(url=url):
                 response = self.authorized_client.get(url)
-                self.assertEqual(response.status_code, HTTPStatus.OK)
+                if url == reverse('posts:add_comment', args=(self.post.id,)):
+                    self.assertRedirects(response,
+                                         reverse('posts:post_detail',
+                                                 args=(self.post.id,)))
+                else:
+                    self.assertEqual(response.status_code, HTTPStatus.OK)
 
                 response = self.guest_client.get(url)
                 self.assertRedirects(response, url_response)

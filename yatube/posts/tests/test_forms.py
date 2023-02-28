@@ -102,6 +102,24 @@ class PostFormTests(TestCase):
                              args=(edit_post.id,)))
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
+
+class CommentFormTests(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.user = User.objects.create_user(username='Leo')
+        cls.group = Group.objects.create(title='Тестовая группа',
+                                         slug='test_slug',
+                                         description='Тестовое описание')
+
+        cls.post = Post.objects.create(text='Тестовый пост',
+                                       group=cls.group,
+                                       author=cls.user)
+
+    def setUp(self):
+        self.authorized_client = Client()
+        self.authorized_client.force_login(self.user)
+
     def test_create_comments_authorized_user(self):
         '''Проверка создания коментария авторизированным пользователем'''
 
@@ -121,15 +139,3 @@ class PostFormTests(TestCase):
                         post=self.post
                         ).exists())
         self.assertEqual(response.status_code, HTTPStatus.OK)
-
-    def test_create_comments_guest_user(self):
-        '''Проверка создания коментария неавторизированным пользователем'''
-
-        add_comment_url = reverse('posts:add_comment', args=(self.post.pk,))
-        response = self.guest_client.post(add_comment_url,
-                                          data={'text': 'Коментарий'},
-                                          follow=True
-                                          )
-        self.assertRedirects(response,
-                             reverse('users:login')
-                             + '?next=' + add_comment_url)

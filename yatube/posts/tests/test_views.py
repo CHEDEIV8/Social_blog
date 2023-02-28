@@ -57,13 +57,14 @@ class PostPagesTests(TestCase):
         cls.comment = Comment.objects.create(post=cls.posts[0],
                                              author=cls.user,
                                              text='comment')
-        cls.urls = [reverse('posts:index'),
+        cls.urls = {'posts:index': reverse('posts:index'),
+                    'posts:group_list':
                     reverse(
                     'posts:group_list', kwargs={'slug':
                                                 f'{cls.group.slug}'}),
-                    reverse(
+                    'posts:profile': reverse(
                     'posts:profile', kwargs={'username':
-                                             f'{cls.user.username}'})]
+                                             f'{cls.user.username}'})}
 
     @classmethod
     def tearDownClass(cls):
@@ -103,7 +104,7 @@ class PostPagesTests(TestCase):
         '''Шаблоны index сформированы
         с правильным контекстом.'''
 
-        response = self.authorized_client.get(self.urls[0])
+        response = self.authorized_client.get(self.urls['posts:index'])
         post = response.context['page_obj'][0]
         self.page_obj_check(post)
 
@@ -111,7 +112,7 @@ class PostPagesTests(TestCase):
         '''Шаблоны group_list сформированы
         с правильным контекстом.'''
 
-        response = self.authorized_client.get(self.urls[1])
+        response = self.authorized_client.get(self.urls['posts:group_list'])
         post = response.context['page_obj'][0]
         self.page_obj_check(post)
         group = response.context['group']
@@ -121,7 +122,7 @@ class PostPagesTests(TestCase):
         '''Шаблоны profile сформированы
         с правильным контекстом.'''
 
-        response = self.authorized_client.get(self.urls[2])
+        response = self.authorized_client.get(self.urls['posts:profile'])
         post = response.context['page_obj'][0]
         self.page_obj_check(post)
         author = response.context['author']
@@ -171,21 +172,21 @@ class PostPagesTests(TestCase):
     def test_cache_index(self):
         '''Проверка хранения и очищения кэша для index.'''
 
-        response = self.authorized_client.get(self.urls[0])
+        response = self.authorized_client.get(self.urls['posts:index'])
         content = response.content
         self.posts.delete()
-        response_old = self.authorized_client.get(self.urls[0])
+        response_old = self.authorized_client.get(self.urls['posts:index'])
         old_conten = response_old.content
         self.assertEqual(old_conten, content)
         cache.clear()
-        response_new = self.authorized_client.get(self.urls[0])
+        response_new = self.authorized_client.get(self.urls['posts:index'])
         new_conten = response_new.content
         self.assertNotEqual(new_conten, content)
 
     def test_no_post_in_wrong_group(self):
         '''Посты не попадают в другую группу'''
 
-        for url in self.urls:
+        for url in self.urls.values():
             with self.subTest(url=url):
                 response = self.authorized_client.get(url)
                 post = response.context['page_obj'][0]
@@ -194,7 +195,7 @@ class PostPagesTests(TestCase):
     def test_paginator_index_group_and_post_profile(self):
         '''Паджинатор отображает верное кол-во'''
 
-        for url in self.urls:
+        for url in self.urls.values():
             with self.subTest(url=url):
                 response = self.authorized_client.get(url)
                 posts = response.context['page_obj']
