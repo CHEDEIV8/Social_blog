@@ -10,6 +10,7 @@ Python 3.7 , Django, SQLite 3, Pillow, Unittes
 ### Описание: 
 **social_blog** - это социальная сеть с авторизацией, персональными лентами, комментариями. Так-же позволяет делится тем, что вам нравится и подписываться на тех авторов которые предоставляют интересный контент
 
+Также см. два варианта REST API для этого проекта: на [Django Rest Framework](https://github.com/CHEDEIV8/social_blog_api) и на [FastApi](https://github.com/CHEDEIV8/social_blog_fastapi).
 
 
 ###  В проекте реализованы следующие функции:
